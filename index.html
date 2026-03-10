@@ -1,101 +1,79 @@
 <!DOCTYPE html>
 <html>
-
 <head>
-<title>Event RSVP</title>
-
-<style>
-body{font-family:Arial;padding:30px}
-.hidden{display:none}
-.error{color:red}
-</style>
-
+  <meta charset="UTF-8">
+  <title>RSVP Form</title>
+  <style>
+    body { font-family: Arial; padding: 30px; }
+    .hidden { display: none; }
+    .error { color: red; }
+    label, select, input, button { display: block; margin-top: 10px; }
+  </style>
 </head>
-
 <body>
 
 <h2>RSVP</h2>
 
 <label>Will you be joining?</label>
-
 <select id="joining">
-<option value="">Select</option>
-<option value="Yes">Yes</option>
-<option value="No">No</option>
+  <option value="">Select</option>
+  <option value="Yes">Yes</option>
+  <option value="No">No</option>
 </select>
-
-<br><br>
 
 <label>Full Name</label>
 <input type="text" id="name">
-
-<br><br>
 
 <button onclick="checkGuest()">Continue</button>
 
 <p class="error" id="error"></p>
 
 <div id="plusSection" class="hidden">
-
-<h3 id="plusName"></h3>
-
-<label>Will your plus one attend?</label>
-
-<select id="plusAttend">
-<option value="">Select</option>
-<option>Yes</option>
-<option>No</option>
-</select>
-
+  <h3 id="plusName"></h3>
+  <label>Will your plus one attend?</label>
+  <select id="plusAttend">
+    <option value="">Select</option>
+    <option>Yes</option>
+    <option>No</option>
+  </select>
 </div>
 
 <div id="singleSeat" class="hidden">
-<p>We have reserved only 1 seat for you.</p>
+  <p>We have reserved only 1 seat for you.</p>
 </div>
 
 <script>
+async function checkGuest() {
+  const name = document.getElementById("name").value;
+  if (!name) return document.getElementById("error").innerText = "Please enter your name.";
 
-async function checkGuest(){
-
-const name = document.getElementById("name").value;
-
-const url =
-"https://script.google.com/macros/s/AKfycbxbEtk2ToSdyOGO-E7buljI-0sQ8dgKT0pqL9n1-PhJouXAnIiHjigpQCiWDkLvd1QLdA/exec?name="+encodeURIComponent(name);
-
-const response = await fetch(url);
-const data = await response.json();
-
-showResult(data);
-
+  const url = "https://script.google.com/macros/s/AKfycbxbEtk2ToSdyOGO-E7buljI-0sQ8dgKT0pqL9n1-PhJouXAnIiHjigpQCiWDkLvd1QLdA/exec?name=" + encodeURIComponent(name);
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
+    showResult(data);
+  } catch(e) {
+    document.getElementById("error").innerText = "Error connecting to server.";
+  }
 }
 
-function showResult(data){
+function showResult(data) {
+  document.getElementById("error").innerText = "";
+  document.getElementById("plusSection").classList.add("hidden");
+  document.getElementById("singleSeat").classList.add("hidden");
 
-if(!data.exists){
-document.getElementById("error").innerText =
-"Your name is not on the RSVP list.";
-return;
+  if (!data.exists) {
+    document.getElementById("error").innerText = "Your name is not on the RSVP list.";
+    return;
+  }
+
+  if (data.plus) {
+    document.getElementById("plusSection").classList.remove("hidden");
+    document.getElementById("plusName").innerText = "Your plus one is: " + data.plus;
+  } else {
+    document.getElementById("singleSeat").classList.remove("hidden");
+  }
 }
-
-if(data.plus){
-
-document.getElementById("plusSection")
-.classList.remove("hidden");
-
-document.getElementById("plusName").innerText =
-"Your plus one is: "+data.plus;
-
-}
-
-else{
-
-document.getElementById("singleSeat")
-.classList.remove("hidden");
-
-}
-
-}
-
 </script>
 
 </body>
